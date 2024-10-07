@@ -40,6 +40,8 @@ function myGameSetup()
     assert(playerBulletImage)
 
     playerBullet = gfx.sprite.new(playerBulletImage)
+    assert(playerBullet)
+    
 
 
 	-- We want an environment displayed behind our sprite.
@@ -67,8 +69,12 @@ end
 
 myGameSetup()
 
--- Start a timer
-local timer = playdate.timer
+-- This function relies on the use of timers, so the timer core library
+-- must be imported, and updateTimers() must be called in the update loop
+local function timerUpdated(playerBullet)
+    playerBullet:moveBy(1,0)
+end
+
 
 -- `playdate.update()` is the heart of every Playdate game.
 -- This function is called right before every frame is drawn onscreen.
@@ -97,20 +103,20 @@ function playdate.update()
         if playdate.buttonIsPressed( playdate.kButtonLeft ) then
             playerSprite:moveBy( -2, 0 )
         end
-
-        if (playerBullet ~= nil ) then
-            if (playdate.buttonIsPressed(playdate.kButtonA) and ((playdate.timer.currentTime - bulletFiredTimer)>1)) then
+        if playerBullet ~=nil then
+            if playdate.buttonJustPressed(playdate.kButtonA) then
                 playerBullet:moveTo(playerSprite.x+20,playerSprite.y-15)
                 playerBullet:add()
-                bulletFiredTimer = timer.start()
-                bulletfired = true
+                bulletFired = true
             end
-            if bulletFired == true and playdate.buttonIsPressed(playdate.kButtonB) then
-                playerBullet:moveBy(1,0)
-                
+    
+            if bulletFired then
+                playdate.timer.new(10,function () timerUpdated(playerBullet) end)
             end
         end
+
     end
+    
 
     
 
