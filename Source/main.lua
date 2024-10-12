@@ -5,28 +5,29 @@ import "CoreLibs/timer"
 
 local gfx <const> = playdate.graphics
 
+-- Sprites
 local playerSprite = nil
 local playerBullet = nil
-local bulletFiredTimer = nil
+
+-- Bullets
 local bulletFired = false
 local spriteBullet = {}
-
-
--- Class for sprite bullet
-function spriteBullet:new(x,y)
-    self.__index = self
-    self.x = x or 0
-    self.y = y or 0
-end
-
+local bulletA = false
+local bulletB = false
+local bulletC = false
+local bulletD = false
+local timerA = 0
+local timerB = 0
 
 
 -- A function to set up your game environment
 
 function myGameSetup()
 
-	-- Set up the player sprite
+    -- display scale 
+    playdate.display.setScale(1)
 
+	-- Set up the player sprite
 	local playerImage = gfx.image.new("Images/playerImage")
 	assert(playerImage) -- raises error if value assignment is false
 
@@ -39,10 +40,14 @@ function myGameSetup()
     local playerBulletImage = gfx.image.new("Images/bullet")
     assert(playerBulletImage)
 
-    playerBullet = gfx.sprite.new(playerBulletImage)
-    assert(playerBullet)
-    
-
+    playerBulletA = gfx.sprite.new(playerBulletImage)
+    assert(playerBulletA)
+    playerBulletB = gfx.sprite.new(playerBulletImage)
+    assert(playerBulletB)
+    playerBulletC = gfx.sprite.new(playerBulletImage)
+    assert(playerBulletC)
+    playerBulletD = gfx.sprite.new(playerBulletImage)
+    assert(playerBulletD)
 
 	-- We want an environment displayed behind our sprite.
     -- There are generally two ways to do this:
@@ -69,13 +74,6 @@ end
 
 myGameSetup()
 
--- This function relies on the use of timers, so the timer core library
--- must be imported, and updateTimers() must be called in the update loop
-local function timerUpdated(playerBullet)
-    playerBullet:moveBy(1,0)
-end
-
-
 -- `playdate.update()` is the heart of every Playdate game.
 -- This function is called right before every frame is drawn onscreen.
 -- Use this function to poll input, run game logic, and move sprites.
@@ -88,7 +86,7 @@ function playdate.update()
     -- to be pressed at once, if the user is pressing diagonally.
 
     -- Update Timers
-
+    playdate.timer.updateTimers()
     if (playerSprite ~= nil) then
         
         if playdate.buttonIsPressed( playdate.kButtonUp ) then
@@ -103,23 +101,74 @@ function playdate.update()
         if playdate.buttonIsPressed( playdate.kButtonLeft ) then
             playerSprite:moveBy( -2, 0 )
         end
-        if playerBullet ~=nil then
-            if playdate.buttonJustPressed(playdate.kButtonA) then
-                playerBullet:moveTo(playerSprite.x+20,playerSprite.y-15)
-                playerBullet:add()
-                bulletFired = true
+        
+        -- control of left turrents bullets, bullet A and B
+        if playerBulletA ~=nil and playerBulletB ~= nil then
+            if playdate.buttonJustPressed(playdate.kButtonA) and timerA > 50 then
+                -- create bullet A
+                if bulletA == false then
+                    playerBulletA:moveTo(playerSprite.x+20,playerSprite.y-15)
+                    playerBulletA:add()
+                    bulletA = true
+                    timerA = playdate.timer.new(100)
+                end
+                 -- create bullet B
+                 if bulletB == false then
+                    playerBulletB:moveTo(playerSprite.x+20,playerSprite.y-15)
+                    playerBulletB:add()
+                    bulletB = true
+                end
             end
-    
-            if bulletFired then
-                playdate.timer.new(10,function () timerUpdated(playerBullet) end)
+
+            if playerBulletA.x >= 200 then
+                playerBulletA:remove()
+                bulletA = false
+            elseif bulletA == true then
+                playerBulletA:moveBy(4,0)
+            end 
+
+            if playerBulletB.x >= 200 then
+                playerBulletB:remove()
+                bulletB = false
+            elseif bulletB == true then
+                playerBulletB:moveBy(4,0)
             end
+
         end
+                
+        if playerBulletC ~=nil and playerBulletD ~= nil then
+            if playdate.buttonJustPressed(playdate.kButtonB) then
+               -- create bullet A
+               if bulletC == false then
+                playerBulletC:moveTo(playerSprite.x+20,playerSprite.y+15)
+                playerBulletC:add()
+                bulletC = true
+                end
+                -- create bullet B
+                if bulletD == false then
+                    playerBulletD:moveTo(playerSprite.x+20,playerSprite.y+15)
+                    playerBulletD:add()
+                    bulletD = true
+                end
+            end
 
+            if playerBulletC.x >= 200 then
+                playerBulletC:remove()
+                bulletC = false
+            elseif bulletC == true then
+                playerBulletC:moveBy(4,0)
+            end 
+
+            if playerBulletD.x >= 200 then
+                playerBulletD:remove()
+                bulletD = false
+            elseif bulletD == true then
+                playerBulletD:moveBy(4,0)
+            end
+           
+
+        end
     end
-    
-
-    
-
 	-- Call the functions below in playdate.update() to draw sprites and keep
     -- timers updated. (We aren't using timers in this example, but in most
     -- average-complexity games, you will.)
